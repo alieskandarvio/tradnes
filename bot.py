@@ -1,18 +1,9 @@
-from selenium import webdriver
-from selenium.webdriver.firefox.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.support.ui import Select
-
-import time
-import random
-import string
-import telebot
+from flask import Flask, request
+from telebot import TeleBot
 
 API_TOKEN = '7470808038:AAHotHSsCWY46SQLOsAfYVdvEuHbCalJ3NY'
-bot = telebot.TeleBot(API_TOKEN)
+bot = TeleBot(API_TOKEN)
+app = Flask(__name__)
 
 user_data = {}
 
@@ -20,7 +11,24 @@ def generate_random_password(length=8):
     letters = string.ascii_letters + string.digits + string.punctuation
     return ''.join(random.choice(letters) for i in range(length))
 
-@bot.message_handler(commands=['start'])
+@app.route('/' + API_TOKEN, methods=['POST'])
+def webhook():
+    update = TeleBot.process_new_updates([TeleBot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    return "!", 200
+
+@app.route('/')
+def index():
+    return 'Hello, World!'
+
+@app.route('/set_webhook', methods=['GET', 'POST'])
+def set_webhook():
+    bot.remove_webhook()
+    s = bot.set_webhook(url='https://your-app-name.herokuapp.com/' + API_TOKEN)
+    if s:
+        return "Webhook was set"
+    else:
+        return "Webhook setting failed"
+
 def start(message):
     bot.send_message(message.chat.id, "Welcome! Please enter your first name:")
     bot.register_next_step_handler(message, get_first_name)
@@ -111,4 +119,6 @@ def fill_form(chat_id):
     finally:
         driver.quit()
 
-bot.polling()
+if __name__ == '__main__':
+    set_webhook()
+    app.run(debug=True)
