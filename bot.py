@@ -23,7 +23,7 @@ def index():
 @app.route('/set_webhook', methods=['GET', 'POST'])
 def set_webhook():
     bot.remove_webhook()
-    s = bot.set_webhook(url='https://your-app-name.herokuapp.com/' + API_TOKEN)
+    s = bot.set_webhook(url='https://tradnes-071cbcf8434e.herokuapp.com/' + API_TOKEN)
     if s:
         return "Webhook was set"
     else:
